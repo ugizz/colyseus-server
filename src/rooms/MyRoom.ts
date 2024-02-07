@@ -4,6 +4,7 @@ import { PlayerState } from "./schema/PlayerState";
 import { PlayerInputMessage } from "../models/PlayerInputMessage";
 import gameConfig from "../gameConfig";
 import { GameConfig } from "../models/gameConfig";
+import { GameState } from "./schema/MyGameState";
 
 export class MyRoom extends Room<MyRoomState> {
   maxClients = 4;
@@ -33,16 +34,22 @@ export class MyRoom extends Room<MyRoomState> {
     // 클라이언트가 방에 참가했을 때, 로그를 출력.
     console.log(client.sessionId, " ", options.nickname, "joined!");
 
-    // 클라이언트의 상태를 PlayerState로 설정.
-    const player = new PlayerState(client).assign({
+    const assignData = {
       id: client.sessionId,
       nickname: options.nickname,
       color: options.color,
-    });
+      isHost: false,
+    };
+    // 만약 플레이어 수가 0명이라면, 첫번째 플레이어를 방장으로 설정
+    if (this.state.players.size === 0) {
+      assignData.isHost = true;
+    }
+    // 클라이언트의 상태를 PlayerState로 설정.
+    const player = new PlayerState(client).assign(assignData);
     // 클라이언트의 상태를 저장.
     this.state.players.set(client.sessionId, player);
     // 클라이언트에게 게임 설정을 전송.
-    client.send("config", gameConfig);
+    client.send("config", this._config);
   }
 
   // 클라이언트가 방을 떠났을 때 호출되는 메서드
@@ -50,6 +57,16 @@ export class MyRoom extends Room<MyRoomState> {
     console.log(client.sessionId, "left!");
     // 클라이언트가 방을 떠났을 때, 클라이언트의 상태를 삭제.
     const playerState: PlayerState = this.state.players.get(client.sessionId);
+    if (playerState) {
+      playerState.disconnect();
+    }
+    if (playerState.isHost) {
+      // 방장이 방을 떠났을 때, 다음 플레이어를 방장으로 설정. (실험해봐야함 여기)
+      const nextHost: PlayerState = this.state.players.values().next().value;
+      if (nextHost) {
+        nextHost.isHost = true;
+      }
+    }
     // 클라이언트의 상태를 삭제.
     this.state.players.delete(client.sessionId);
   }
@@ -64,6 +81,13 @@ export class MyRoom extends Room<MyRoomState> {
     this.onMessage("PlayerInput", this.onPlayerInput.bind(this));
     // 클라이언트로부터 PlayerColorChange 메시지를 받았을 때, onPlayerColorChange 메서드를 실행.
     this.onMessage("PlayerColorChange", this.onPlayerColorChange.bind(this));
+    // 클라이언트로부터 PlayerReady 메시지를 받았을 때, onPlayerReady 메서드를 실행.
+    this.onMessage("PlayerReady", this.onPlayerReady.bind(this));
+    // 클라이언트로부터 HostPlayerStartGame 메시지를 받았을 때, onHostPlayerStartGame 메서드를 실행.
+    this.onMessage(
+      "HostPlayerStartGame",
+      this.onHostPlayerStartGame.bind(this)
+    );
     // 클라이언트로부터 PlayerAttack 메시지를 받았을 때, onPlayerAttack 메서드를 실행.
     this.onMessage("PlayerAttack", this.onPlayerAttack.bind(this));
   }
@@ -81,14 +105,37 @@ export class MyRoom extends Room<MyRoomState> {
   // 클라이언트로부터 받은 색상 변경 메시지를 처리하는 메서드
   private onPlayerColorChange(client: Client, color: string) {
     const playerState: PlayerState = this.state.players.get(client.sessionId);
+    if (!playerState) return;
     playerState.color = color;
   }
+
+  // 클라이언트로부터 받은 준비 메시지를 처리하는 메서드
+  private onPlayerReady(client: Client, isReady: boolean) {
+    const playerState: PlayerState = this.state.players.get(client.sessionId);
+    if (!playerState) return;
+    playerState.isReady = isReady;
+  }
+  // 클라이언트로부터 받은 게임 시작 메시지를 처리하는 메서드
+  private onHostPlayerStartGame(client: Client) {
+    const playerState: PlayerState = this.state.players.get(client.sessionId);
+    // 게임시작 요청을 보낸 유저가 방장이고, 게임이 시작되지 않았다면, 게임 시작 카운트다운 상태로 변경
+    const allReady: boolean = this.state.gameState.waitForStart();
+    if (
+      playerState &&
+      playerState.isHost &&
+      this.state.gameState.currentState === GameState.WAIT_FOR_START &&
+      allReady
+    ) {
+      this.state.gameState.moveToNextState(GameState.CLOSE_COUNTDOWN);
+    }
+  }
+
   // 클라이언트로부터 받은 공격 메시지를 처리하는 메서드
-  private onPlayerAttack(client: Client, attack: boolean) {
+  private onPlayerAttack(client: Client, hiderId: string) {
     const playerState: PlayerState = this.state.players.get(client.sessionId);
     if (playerState && playerState.isSeeker) {
       // 공격 로직
+      this.state.seekerAttackHider(client.sessionId, hiderId);
     }
-    return;
   }
 }

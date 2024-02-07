@@ -14,6 +14,10 @@ export class GameConfig {
   public get MaxPlayers(): number {
     return this._data.maxPlayers || 8;
   }
+  // 준비 카운트다운
+  public get PreRoundCountdown(): number {
+    return this._data.preRoundCountdown || 5000;
+  }
   // 프롤로그 카운트다운
   public get PrologueCountdown(): number {
     return this._data.prologueCountdown || 10000;

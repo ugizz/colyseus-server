@@ -6,6 +6,7 @@ export default {
   seekerMovementBoost: 1.3,
   seekerCheckDistance: 2,
   seekerFOV: 60,
+  preRoundCountdown: 5000,
   initializeCountdown: 500,
   prologueCountdown: 10000,
   scatterCountdown: 3000,

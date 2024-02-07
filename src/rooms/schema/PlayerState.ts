@@ -8,6 +8,8 @@ export class PlayerState extends Schema {
   @type("string") nickname: string = "";
   // 플레이어 색상
   @type("string") color: string = "White";
+  // 방장 여부
+  @type("boolean") isHost: boolean = false;
   // 플레이어 준비 여부
   @type("boolean") isReady: boolean = false;
   // 술래 여부
@@ -45,6 +47,7 @@ export class PlayerState extends Schema {
     this.canMove = false;
     this.isCaptured = false;
     this.isSeeker = false;
+    this.isReady = false;
     this.spawnPoint = -1;
     this.positionTimestamp = 0;
   }
