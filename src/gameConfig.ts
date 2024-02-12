@@ -2,7 +2,7 @@ export default {
   minPlayers: 3,
   maxPlayers: 10,
   seekerCount: 1,
-  playerMovementSpeed: 300,
+  playerMovementSpeed: 500,
   seekerMovementBoost: 1.3,
   seekerCheckDistance: 2,
   seekerFOV: 60,
@@ -11,5 +11,5 @@ export default {
   prologueCountdown: 10000,
   scatterCountdown: 3000,
   huntCountdown: 60000,
-  gameOverCountdown: 10000,
+  gameOverCountdown: 5000,
 };

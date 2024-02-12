@@ -1,9 +1,10 @@
-import { Schema, Context, type, MapSchema } from "@colyseus/schema";
+import { Schema, Context, MapSchema } from "@colyseus/schema";
 import { PlayerState } from "./PlayerState";
 import { MyGameState } from "./MyGameState";
 import { MyRoom } from "../MyRoom";
 import { GameConfig } from "../../models/gameConfig";
 import { distanceBetweenPlayers, random } from "../../helpers/Utility";
+const type = Context.create();
 
 export class MyRoomState extends Schema {
   // 플레이어 목록
@@ -78,18 +79,26 @@ export class MyRoomState extends Schema {
   public freeUpSpawnPointIndex(playerState: PlayerState) {
     const spawnPoint: number = playerState.spawnPoint;
 
-    if (playerState.isSeeker) {
-      return;
-    }
+    // if (playerState.isSeeker) {
+    //   return;
+    // }
 
-    if (spawnPoint < 0 || spawnPoint > this._room.maxClients - 2) {
-      return;
-    }
+    // if (spawnPoint < 0 || spawnPoint > this._room.maxClients - 2) {
+    //   return;
+    // }
 
-    // Reset the player's respawn point
+    // 플레이어의 스폰 지점을 초기화
     playerState.spawnPoint = -1;
 
     this._availableSpawnPoints.push(spawnPoint);
+  }
+
+  public resetForPlay() {
+    this.initializeSpawnPoints();
+
+    this.players.forEach((player: PlayerState) => {
+      player.resetPlayer();
+    });
   }
 
   public seekerLeft() {

@@ -2,8 +2,8 @@ import { Room, Client } from "@colyseus/core";
 import { MyRoomState } from "./schema/MyRoomState";
 import { PlayerState } from "./schema/PlayerState";
 import { PlayerInputMessage } from "../models/PlayerInputMessage";
-import gameConfig from "../gameConfig";
 import { GameConfig } from "../models/gameConfig";
+import gameConfig from "../gameConfig";
 import { GameState } from "./schema/MyGameState";
 
 export class MyRoom extends Room<MyRoomState> {
@@ -13,20 +13,28 @@ export class MyRoom extends Room<MyRoomState> {
 
   // 방이 생성될 때 호출되는 메서드
   onCreate(options: any) {
-    // 방의 상태를 MyRoomState로 설정.
-    this.setState(new MyRoomState(this, this._config));
-    this._config = new GameConfig(options);
+    try {
+      // 방의 상태를 MyRoomState로 설정.
+      this.setState(new MyRoomState(this, this._config));
+      this._config = new GameConfig(gameConfig);
+      this._config._data.seekerCount = options.seekerCount;
+      this._config._data.maxPlayers = options.maxPlayers;
+      this.maxClients = options.maxPlayers;
+      console.log(options);
+      console.log("MyRoom created!", this.roomId, this._config);
+      // 게임 상태를 업데이트하는 로직을 실행하기 위해 핸들러를 등록.
+      this.registerHandlers();
 
-    // 게임 상태를 업데이트하는 로직을 실행하기 위해 핸들러를 등록.
-    this.registerHandlers();
+      // 패치율은 클라이언트에게 게임 상태를 전송하는 속도로, 이 속도에 따라 클라이언트가 게임 상태를 업데이트.
+      this.setPatchRate(16);
 
-    // 패치율은 클라이언트에게 게임 상태를 전송하는 속도로, 이 속도에 따라 클라이언트가 게임 상태를 업데이트.
-    this.setPatchRate(16);
-
-    // 시뮬레이션 간격은 게임의 로직을 실행하는 간격으로, 이 간격에 따라 게임의 로직이 실행.
-    this.setSimulationInterval((dt) => {
-      this.state.update(dt / 1000);
-    });
+      // 시뮬레이션 간격은 게임의 로직을 실행하는 간격으로, 이 간격에 따라 게임의 로직이 실행.
+      this.setSimulationInterval((dt) => {
+        this.state.update(dt / 1000);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   // 클라이언트가 방에 참가했을 때 호출되는 메서드
@@ -36,20 +44,26 @@ export class MyRoom extends Room<MyRoomState> {
 
     const assignData = {
       id: client.sessionId,
-      nickname: options.nickname,
-      color: options.color,
+      nickname: options.nickname || "Player" + client.sessionId,
+      color: options.color || "White",
       isHost: false,
     };
     // 만약 플레이어 수가 0명이라면, 첫번째 플레이어를 방장으로 설정
     if (this.state.players.size === 0) {
       assignData.isHost = true;
+      client.send("host", true);
+    } else {
+      client.send("host", false);
     }
+
     // 클라이언트의 상태를 PlayerState로 설정.
     const player = new PlayerState(client).assign(assignData);
     // 클라이언트의 상태를 저장.
     this.state.players.set(client.sessionId, player);
     // 클라이언트에게 게임 설정을 전송.
-    client.send("config", this._config);
+    client.send("config", this._config._data);
+    client.send("roomId", this.roomId);
+    client.send("sessionId", client.sessionId);
   }
 
   // 클라이언트가 방을 떠났을 때 호출되는 메서드
@@ -66,6 +80,7 @@ export class MyRoom extends Room<MyRoomState> {
       if (nextHost) {
         nextHost.isHost = true;
       }
+      this.broadcastNewHost();
     }
     // 클라이언트의 상태를 삭제.
     this.state.players.delete(client.sessionId);
@@ -98,7 +113,7 @@ export class MyRoom extends Room<MyRoomState> {
 
     if (playerState) {
       // 클라이언트로부터 받은 플레이어 입력을 처리.
-      playerState.setPosition(playerInput.position, playerInput.timestamp);
+      playerState.setPosition(playerInput.position);
       playerState.setDirection(playerInput.direction);
     }
   }
@@ -137,5 +152,9 @@ export class MyRoom extends Room<MyRoomState> {
       // 공격 로직
       this.state.seekerAttackHider(client.sessionId, hiderId);
     }
+  }
+
+  public broadcastNewHost() {
+    this.broadcast("newHost", this.state.players.values().next().value.id);
   }
 }

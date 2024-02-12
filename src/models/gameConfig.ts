@@ -1,7 +1,8 @@
 import { clamp } from "../helpers/Utility";
+import { type } from "@colyseus/schema";
 
 export class GameConfig {
-  private _data: any = null;
+  public _data: any = null;
 
   constructor(rawData: any = {}) {
     this._data = rawData;
@@ -11,6 +12,7 @@ export class GameConfig {
     return this._data.minPlayers || 3;
   }
   // 최대 플레이어 수
+
   public get MaxPlayers(): number {
     return this._data.maxPlayers || 8;
   }

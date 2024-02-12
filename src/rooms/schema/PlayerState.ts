@@ -1,5 +1,8 @@
-import { Schema, type } from "@colyseus/schema";
+import { Schema, Context } from "@colyseus/schema";
 import { Client } from "colyseus";
+import { Quat, Vect3 } from "./Schemas";
+
+const type = Context.create();
 
 export class PlayerState extends Schema {
   // 플레이어 ID
@@ -19,18 +22,18 @@ export class PlayerState extends Schema {
   // 플레이어 잡혔는지 여부
   @type("boolean") isCaptured: boolean = false;
   // 스폰 지점
-  @type("number") spawnPoint: number = -1;
+  @type("float32") spawnPoint: number = -1;
 
   // 플레이어 위치
-  @type("number") xPos: number = 0.0;
-  @type("number") yPos: number = 0.5;
-  @type("number") zPos: number = 0.0;
-  @type("number") positionTimestamp: number = 0.0;
+  @type("float32") xPos: number = 0.0;
+  @type("float32") yPos: number = 0.5;
+  @type("float32") zPos: number = 0.0;
+  @type("float32") positionTimestamp: number = 0.0;
 
   // 플레이어 방향
-  @type("number") xDir: number = 0.0;
-  @type("number") yDir: number = 0.5;
-  @type("number") zDir: number = 0.0;
+  @type("float32") xDir: number = 0.0;
+  @type("float32") yDir: number = 0.5;
+  @type("float32") zDir: number = 0.0;
 
   private _client: Client = null;
 
@@ -56,17 +59,15 @@ export class PlayerState extends Schema {
     this.nickname = nickname;
   }
   // 플레이어 위치 설정
-  public setPosition(position: number[], positionTimestamp: number) {
-    this.xPos = position[0];
-    this.yPos = position[1];
-    this.zPos = position[2];
-
-    this.positionTimestamp = positionTimestamp;
+  public setPosition(position: Vect3) {
+    this.xPos = position.x;
+    this.yPos = position.y;
+    this.zPos = position.z;
   }
   // 플레이어 방향 설정
-  public setDirection(direction: number[]) {
-    this.xDir = direction[0];
-    this.yDir = direction[1];
-    this.zDir = direction[2];
+  public setDirection(direction: Quat) {
+    this.xDir = direction.x;
+    this.yDir = direction.y;
+    this.zDir = direction.z;
   }
 }

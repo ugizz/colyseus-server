@@ -1,4 +1,4 @@
-import { Schema, type } from "@colyseus/schema";
+import { Schema, Context } from "@colyseus/schema";
 import { MyRoom } from "../MyRoom";
 import { GameConfig } from "../../models/gameConfig";
 import { PlayerState } from "./PlayerState";
@@ -22,14 +22,14 @@ export enum GameState {
   // 게임 종료 상태
   GAME_OVER = "gameOver",
 }
-
+const type = Context.create();
 export class MyGameState extends Schema {
   // 게임 현재 상태
   @type("string") currentState: GameState = GameState.NONE;
   // 술래가 이겼는지 여부
   @type("boolean") seekerWon: boolean = false;
   // 남은 시간 카운트다운
-  @type("number") countdown: number = 0;
+  @type("int32") countdown: number = 0;
 
   // 방
   private _room: MyRoom = null;
@@ -95,6 +95,12 @@ export class MyGameState extends Schema {
       case GameState.SCATTER:
         this.scatterCountdown();
         break;
+      case GameState.HUNT:
+        this.hunt();
+        break;
+      case GameState.GAME_OVER:
+        this.gameOver();
+        break;
     }
   }
 
@@ -106,6 +112,7 @@ export class MyGameState extends Schema {
         this.countdown = 0;
         this.seekerWon = false;
         this._capturedPlayers.clear();
+        this._room.state.resetForPlay();
         this._room.unlock();
         break;
       case GameState.CLOSE_COUNTDOWN:
@@ -155,12 +162,40 @@ export class MyGameState extends Schema {
         this._stateTimestamp = Date.now();
         break;
       case GameState.SCATTER:
-        // Allow all the Hiders to begin moving
+        // 시민들이 흩어질 수 있도록 설정
         this._room.state.players.forEach((player: PlayerState) => {
           if (!player.isSeeker) {
             player.canMove = true;
           }
         });
+        break;
+      case GameState.HUNT:
+        try {
+          const players: PlayerState[] = Array.from(
+            this._room.state.players.values()
+          );
+
+          players.forEach((player: PlayerState) => {
+            if (player.isSeeker) {
+              player.canMove = true;
+            }
+          });
+        } catch (error: any) {
+          console.error(`${error.stack}`);
+        }
+
+        // 사냥 시간을 설정하기 위해 게임 상태 변경 시간을 현재로 설정
+        this._stateTimestamp = Date.now();
+
+        break;
+      case GameState.GAME_OVER:
+        // 모든 플레이어를 움직일 수 있도록 설정
+        this._room.state.players.forEach((player: PlayerState) => {
+          player.canMove = true;
+        });
+
+        this._stateTimestamp = Date.now();
+        this.countdown = this._config.GameOverCountdown / 1000;
         break;
     }
   }
@@ -225,6 +260,33 @@ export class MyGameState extends Schema {
     }
 
     this.moveToNextState(GameState.HUNT);
+  }
+
+  private hunt() {
+    let elapsedTime: number = Date.now() - this._stateTimestamp;
+    const countdown: number = this._config.HuntCountdown;
+
+    this.setCountdown(countdown - elapsedTime, countdown);
+
+    this.seekerWon = this._capturedPlayers.size >= this.WinCondition;
+
+    // 만약 술래가 승리했다면, 게임 종료 상태로 변경
+    if (!this.seekerWon && elapsedTime < countdown) {
+      return;
+    }
+
+    this.moveToNextState(GameState.GAME_OVER);
+  }
+
+  private gameOver() {
+    let elapsedTime: number = Date.now() - this._stateTimestamp;
+    const countdown: number = this._config.GameOverCountdown;
+
+    if (elapsedTime < countdown) {
+      this.setCountdown(countdown - elapsedTime, countdown);
+      return;
+    }
+    this.moveToNextState(GameState.NONE);
   }
 
   private setCountdown(timeMs: number, maxMs: number) {
