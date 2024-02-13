@@ -1,6 +1,7 @@
 import { Schema, Context } from "@colyseus/schema";
 import { Client } from "colyseus";
 import { Quat, Vect3 } from "./Schemas";
+import { PlayerInputMessage } from "../../models/PlayerInputMessage";
 
 const type = Context.create();
 
@@ -26,14 +27,9 @@ export class PlayerState extends Schema {
 
   // 플레이어 위치
   @type("float32") xPos: number = 0.0;
-  @type("float32") yPos: number = 0.5;
-  @type("float32") zPos: number = 0.0;
+  @type("float32") yPos: number = 0.0;
+  @type("float32") zPos: number = 0.5;
   @type("float32") positionTimestamp: number = 0.0;
-
-  // 플레이어 방향
-  @type("float32") xDir: number = 0.0;
-  @type("float32") yDir: number = 0.5;
-  @type("float32") zDir: number = 0.0;
 
   private _client: Client = null;
 
@@ -59,15 +55,9 @@ export class PlayerState extends Schema {
     this.nickname = nickname;
   }
   // 플레이어 위치 설정
-  public setPosition(position: Vect3) {
+  public setPosition(position: PlayerInputMessage) {
     this.xPos = position.x;
     this.yPos = position.y;
     this.zPos = position.z;
-  }
-  // 플레이어 방향 설정
-  public setDirection(direction: Quat) {
-    this.xDir = direction.x;
-    this.yDir = direction.y;
-    this.zDir = direction.z;
   }
 }

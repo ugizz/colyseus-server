@@ -59,11 +59,11 @@ export class MyRoom extends Room<MyRoomState> {
     // 클라이언트의 상태를 PlayerState로 설정.
     const player = new PlayerState(client).assign(assignData);
     // 클라이언트의 상태를 저장.
-    this.state.players.set(client.sessionId, player);
     // 클라이언트에게 게임 설정을 전송.
     client.send("config", this._config._data);
     client.send("roomId", this.roomId);
     client.send("sessionId", client.sessionId);
+    this.state.players.set(client.sessionId, player);
   }
 
   // 클라이언트가 방을 떠났을 때 호출되는 메서드
@@ -113,8 +113,8 @@ export class MyRoom extends Room<MyRoomState> {
 
     if (playerState) {
       // 클라이언트로부터 받은 플레이어 입력을 처리.
-      playerState.setPosition(playerInput.position);
-      playerState.setDirection(playerInput.direction);
+      playerState.setPosition(playerInput);
+      console.log(playerInput);
     }
   }
   // 클라이언트로부터 받은 색상 변경 메시지를 처리하는 메서드
@@ -155,6 +155,10 @@ export class MyRoom extends Room<MyRoomState> {
   }
 
   public broadcastNewHost() {
-    this.broadcast("newHost", this.state.players.values().next().value.id);
+    this.state.players.forEach((player: PlayerState) => {
+      if (player.isHost) {
+        this.broadcast("newHost", player.id);
+      }
+    });
   }
 }
