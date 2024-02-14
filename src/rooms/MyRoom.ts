@@ -17,8 +17,8 @@ export class MyRoom extends Room<MyRoomState> {
       // 방의 상태를 MyRoomState로 설정.
       this.setState(new MyRoomState(this, this._config));
       this._config = new GameConfig(gameConfig);
-      this._config._data.seekerCount = options.seekerCount;
-      this._config._data.maxPlayers = options.maxPlayers;
+      this._config._data.seekerCount = options.seekerCount || 1;
+      this._config._data.maxPlayers = options.maxPlayers || 8;
       this.maxClients = options.maxPlayers;
       console.log(options);
       console.log("MyRoom created!", this.roomId, this._config);
@@ -114,7 +114,7 @@ export class MyRoom extends Room<MyRoomState> {
     if (playerState) {
       // 클라이언트로부터 받은 플레이어 입력을 처리.
       playerState.setPosition(playerInput);
-      console.log(playerInput);
+      // console.log(playerInput);
     }
   }
   // 클라이언트로부터 받은 색상 변경 메시지를 처리하는 메서드

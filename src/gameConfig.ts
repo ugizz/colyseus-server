@@ -2,7 +2,7 @@ export default {
   minPlayers: 3,
   maxPlayers: 10,
   seekerCount: 1,
-  playerMovementSpeed: 500,
+  playerMovementSpeed: 5,
   seekerMovementBoost: 1.3,
   seekerCheckDistance: 2,
   seekerFOV: 60,
