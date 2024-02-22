@@ -2,7 +2,9 @@ import config from "@colyseus/tools";
 import { monitor } from "@colyseus/monitor";
 import { playground } from "@colyseus/playground";
 import { WebSocketTransport } from "@colyseus/ws-transport";
-
+import { RedisPresence } from "@colyseus/redis-presence";
+import { RedisDriver } from "@colyseus/redis-driver";
+import expressBasicAuth from "express-basic-auth";
 /**
  * Import your Room files
  */
@@ -14,6 +16,11 @@ export default config({
   //       /* ...options */
   //     });
   //   },
+  options: {
+    presence: new RedisPresence(),
+    driver: new RedisDriver(),
+    // publicAddress: "ws.ugizz.store",
+  },
 
   initializeGameServer: (gameServer) => {
     /**
@@ -36,7 +43,7 @@ export default config({
      * (It is not recommended to expose this route in a production environment)
      */
     if (process.env.NODE_ENV !== "production") {
-      app.use("/", playground);
+      // app.use("/", playground);
     }
 
     /**
@@ -44,7 +51,19 @@ export default config({
      * It is recommended to protect this route with a password
      * Read more: https://docs.colyseus.io/tools/monitor/#restrict-access-to-the-panel-using-a-password
      */
-    app.use("/colyseus", monitor());
+    app.use(
+      "/colyseus",
+      expressBasicAuth({
+        challenge: true,
+        users: {
+          [process.env.SUPER_USER]: process.env.SUPER_PASSWORD, // 지정된 ID/비밀번호
+          ["user"]: "password",
+        },
+      }),
+      monitor()
+    );
+    // 명령줄에서 포트 번호를 읽어오기
+    // app.listen(parseInt(port));
   },
 
   beforeListen: () => {

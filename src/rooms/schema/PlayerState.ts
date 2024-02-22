@@ -19,7 +19,7 @@ export class PlayerState extends Schema {
   // 술래 여부
   @type("boolean") isSeeker: boolean = false;
   // 플레이어 이동 가능 여부
-  @type("boolean") canMove: boolean = false;
+  @type("boolean") canMove: boolean = true;
   // 플레이어 잡혔는지 여부
   @type("boolean") isCaptured: boolean = false;
   // 스폰 지점
@@ -33,6 +33,12 @@ export class PlayerState extends Schema {
 
   private _client: Client = null;
 
+  private accessToken: string = "";
+
+  public get AccessToken() {
+    return this.accessToken;
+  }
+
   constructor(client: Client, ...args: any[]) {
     super(args);
     this._client = client;
@@ -43,11 +49,17 @@ export class PlayerState extends Schema {
   }
   // 플레이어 초기화
   public resetPlayer() {
-    this.canMove = false;
+    // 이동 가능 여부
+    this.canMove = true;
+    // 잡혔는지 여부
     this.isCaptured = false;
+    // 술래 여부
     this.isSeeker = false;
-    this.isReady = false;
+    // 준비 여부
+    this.isReady = true;
+    // 스폰 지점
     this.spawnPoint = -1;
+    // 위치에 이동한 시간
     this.positionTimestamp = 0;
   }
   // 플레이어 닉네임 설정

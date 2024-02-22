@@ -12,6 +12,10 @@ import { listen } from "@colyseus/tools";
 
 // Import Colyseus config
 import app from "./app.config";
-
+const defaultPort = "2567";
+const port = process.argv.includes("-p")
+  ? process.argv[process.argv.indexOf("-p") + 1]
+  : defaultPort;
+console.log("port: ", port);
 // Create and listen on 2567 (or PORT environment variable.)
-listen(app);
+listen(app, parseInt(port));

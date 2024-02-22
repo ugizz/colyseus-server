@@ -1,5 +1,8 @@
 import { PlayerState } from "../rooms/schema/PlayerState";
 
+// value가 min과 max 사이에 있는지 확인
+// 만약 value가 min보다 작다면 min을 반환
+// 만약 value가 max보다 크다면 max를 반환
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }

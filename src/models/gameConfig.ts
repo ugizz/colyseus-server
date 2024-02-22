@@ -1,8 +1,9 @@
+import gameConfig from "../gameConfig";
 import { clamp } from "../helpers/Utility";
 import { type } from "@colyseus/schema";
 
 export class GameConfig {
-  public _data: any = null;
+  public _data: any;
 
   constructor(rawData: any = {}) {
     this._data = rawData;

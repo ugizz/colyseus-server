@@ -4,6 +4,7 @@ import { MyGameState } from "./MyGameState";
 import { MyRoom } from "../MyRoom";
 import { GameConfig } from "../../models/gameConfig";
 import { distanceBetweenPlayers, random } from "../../helpers/Utility";
+
 const type = Context.create();
 
 export class MyRoomState extends Schema {
@@ -12,8 +13,11 @@ export class MyRoomState extends Schema {
   // 게임 상태
   @type(MyGameState) gameState: MyGameState;
 
+  // 방
   private _room: MyRoom = null;
+  // 스폰 지점
   private _availableSpawnPoints: number[] = null;
+  // 게임 설정
   private _config: GameConfig;
 
   constructor(room: MyRoom, ...args: any[]) {
@@ -33,12 +37,30 @@ export class MyRoomState extends Schema {
     this.gameState.update(deltaTime);
   }
 
+  // public seekerAttackHider(seekerId: string) {
+  //   const seeker: PlayerState = this.players.get(seekerId);
+  //   this.players.forEach((player: PlayerState) => {
+  //     if (player.isCaptured || player.isSeeker) {
+  //       return;
+  //     }
+  //     const distance: number = distanceBetweenPlayers(seeker, player);
+  //     if (distance <= this._config.SeekerCheckDistance) {
+  //       this.gameState.seekerCapturedHider(player);
+  //     }
+  //   });
+  //   return;
+  // }
+  // 술래가 시민을 공격
   public seekerAttackHider(seekerId: string, hiderId: string) {
     const seeker: PlayerState = this.players.get(seekerId);
     const hider: PlayerState = this.players.get(hiderId);
+    // 만약 술래와 시민이 있다면
     if (seeker && hider) {
+      // 시민과 술래의 거리를 계산
       const distance: number = distanceBetweenPlayers(seeker, hider);
+      // 만약 거리가 술래의 공격 거리보다 작다면
       if (distance <= this._config.SeekerCheckDistance) {
+        // 시민을 잡음
         this.gameState.seekerCapturedHider(hider);
       }
     }
@@ -53,7 +75,7 @@ export class MyRoomState extends Schema {
       return;
     }
 
-    // With only one seeker there should be (max clients - 1) spawn points available
+    // 스폰 지점을 설정
     for (let i: number = 0; i < this._room.maxClients - 1; i++) {
       this._availableSpawnPoints.push(i);
     }
@@ -94,7 +116,7 @@ export class MyRoomState extends Schema {
   }
 
   public resetForPlay() {
-    this.initializeSpawnPoints();
+    // this.initializeSpawnPoints();
 
     this.players.forEach((player: PlayerState) => {
       player.resetPlayer();

@@ -1,23 +1,17 @@
-const os = require('os');
-
-/**
- * COLYSEUS CLOUD WARNING:
- * ----------------------
- * PLEASE DO NOT UPDATE THIS FILE MANUALLY AS IT MAY CAUSE DEPLOYMENT ISSUES
- */
-
+// ecosystem.config.js
+const os = require("os");
 module.exports = {
-  apps : [{
-    name: "colyseus-app",
-    script: 'build/index.js',
-    time: true,
-    watch: false,
-    instances: os.cpus().length,
-    exec_mode: 'fork',
-    wait_ready: true,
-    env_production: {
-      NODE_ENV: 'production'
-    }
-  }],
+  apps: [
+    {
+      port: 2567,
+      name: "colyseus-proxy",
+      script: "./build/index.js",
+      instances: 1, // scale this up if the proxy becomes the bottleneck
+      exec_mode: "cluster",
+      env: {
+        PORT: 2567,
+        PUBLIC_ADDRESS: "ws.ugizz.store",
+      },
+    },
+  ],
 };
-
