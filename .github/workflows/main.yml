@@ -7,7 +7,7 @@ on:
 
 # 환경설정
 env:
-  DOCKER_IMAGE: ghcr.io/${{ github.actor }}/colyseus-server
+  DOCKER_IMAGE: ghcr.io/${{ github.repository_owner }}/colyseus-server
   VERSION: ${{ github.sha }}
   NAME: colyseus-server
 jobs:
