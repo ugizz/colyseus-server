@@ -17,16 +17,12 @@ export default config({
   //     });
   //   },
   options: {
-    presence: new RedisPresence({
-      // @colyseus/redis-presence options
-      host: process.env.REDIS_HOST,
-      port: Number(process.env.REDIS_PORT),
-    }),
-    driver: new RedisDriver({
-      // @colyseus/redis-presence options
-      host: process.env.REDIS_HOST,
-      port: Number(process.env.REDIS_PORT),
-    }),
+    presence: new RedisPresence(
+      `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
+    ),
+    driver: new RedisDriver(
+      `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
+    ),
     // publicAddress: "ws.ugizz.store",
   },
 
