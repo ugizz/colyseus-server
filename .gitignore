@@ -1,5 +1,17 @@
 ./node_modules
+build/*/*
 
 .env.*
 .env.development
 .env.production
+build/app.config.js
+build/gameConfig.js
+build/index.js
+build/helpers/Utility.js
+build/models/gameConfig.js
+build/models/PlayerInputMessage.js
+build/rooms/MyRoom.js
+build/rooms/schema/MyGameState.js
+build/rooms/schema/MyRoomState.js
+build/rooms/schema/PlayerState.js
+build/rooms/schema/Schemas.js
