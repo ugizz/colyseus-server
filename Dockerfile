@@ -16,4 +16,4 @@ RUN npm install
 RUN npm run build 
 
 EXPOSE 2567
-CMD [ "node", "build/indesx.js" ]
+CMD [ "node", "build/index.js" ]
