@@ -17,8 +17,16 @@ export default config({
   //     });
   //   },
   options: {
-    presence: new RedisPresence(),
-    driver: new RedisDriver(),
+    presence: new RedisPresence({
+      // @colyseus/redis-presence options
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+    }),
+    driver: new RedisDriver({
+      // @colyseus/redis-presence options
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+    }),
     // publicAddress: "ws.ugizz.store",
   },
 
@@ -62,6 +70,7 @@ export default config({
       }),
       monitor()
     );
+    app.use("/friend/request", (req, res) => {});
     // 명령줄에서 포트 번호를 읽어오기
     // app.listen(parseInt(port));
   },

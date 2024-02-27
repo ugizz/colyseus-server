@@ -44,6 +44,8 @@ jobs:
           build-args: |
             SUPER_USER=${{ secrets.SUPER_USER }}
             SUPER_PASSWORD=${{ secrets.SUPER_PASSWORD }}
+            REDIS_HOST=${{ secrets.REDIS_HOST }}
+            REDIS_PORT=${{ secrets.REDIS_PORT }}
   # 배포 Job
   deploy:
     needs: build # build 후에 실행되도록 정의
