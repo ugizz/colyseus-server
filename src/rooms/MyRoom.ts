@@ -109,10 +109,10 @@ export class MyRoom extends Room<MyRoomState> {
     this.onMessage("PlayerInput", this.onPlayerInput.bind(this));
     // 클라이언트로부터 PlayerColorChange 메시지를 받았을 때, onPlayerColorChange 메서드를 실행.
     // bind 메서드를 사용하여, onPlayerColorChange 메서드 내부에서 this 키워드를 사용할 수 있도록 설정.
-    this.onMessage("PlayerColorChange", this.onPlayerColorChange.bind(this));
+    //this.onMessage("PlayerColorChange", this.onPlayerColorChange.bind(this));
     // 클라이언트로부터 PlayerReady 메시지를 받았을 때, onPlayerReady 메서드를 실행.
     // bind 메서드를 사용하여, onPlayerReady 메서드 내부에서 this 키워드를 사용할 수 있도록 설정.
-    this.onMessage("PlayerReady", this.onPlayerReady.bind(this));
+    //this.onMessage("PlayerReady", this.onPlayerReady.bind(this));
     // 클라이언트로부터 HostPlayerStartGame 메시지를 받았을 때, onHostPlayerStartGame 메서드를 실행.
     // bind 메서드를 사용하여, onHostPlayerStartGame 메서드 내부에서 this 키워드를 사용할 수 있도록 설정.
     this.onMessage(
@@ -156,7 +156,8 @@ export class MyRoom extends Room<MyRoomState> {
     // const allReady: boolean = this.state.gameState.waitForStart();
     if (
       playerState &&
-      playerState.isHost
+      playerState.isHost &&
+      this.state.players.size > this._config.SeekerCount
       // this.state.gameState.currentState === GameState.WAIT_FOR_START &&
       // allReady
     ) {
