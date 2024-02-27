@@ -17,12 +17,14 @@ export default config({
   //     });
   //   },
   options: {
-    presence: new RedisPresence(
-      `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
-    ),
-    driver: new RedisDriver(
-      `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`
-    ),
+    presence: new RedisPresence({
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT),
+    }),
+    driver: new RedisDriver({
+      host: process.env.REDIS_HOST,
+      port: parseInt(process.env.REDIS_PORT),
+    }),
     // publicAddress: "ws.ugizz.store",
   },
 
